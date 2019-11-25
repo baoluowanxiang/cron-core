@@ -15,21 +15,17 @@ func main() {
 		Opts: []*base.Option{},
 		Wg:   &sync.WaitGroup{},
 	}
-	cron := new(service.CronService);
+	cron := new(service.CronService)
 	registService(client, cron)
 	client.Wg.Wait()
+	s := new(job.CronJob)
+	s.Create(1, "*/1 * * * * *", "hello, cron")
 	var i int = 0
-	j := new(job.CronJob)
-	j.Create(1, "*/1 * * * * *", "hello,world", job.OPC_ADD )
-	for{
+	for {
 		time.Sleep(time.Second)
-		i++
-		if i==10 {
-			cron.Ch<-j
-		}
-		if i == 20 {
-			j.OPC = job.OPC_REMOVE
-			cron.Ch<-j
+		if i < 3 {
+			i++
+			cron.AddCron(s)
 		}
 	}
 }
@@ -42,4 +38,3 @@ func registService(client base.ClientOpt, services ...base.Service) {
 		go srv.Start()
 	}
 }
-
