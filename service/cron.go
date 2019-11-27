@@ -16,7 +16,8 @@ type CronService struct {
 	Table *job.JobHashTable
 }
 
-func (crn *CronService) Start() {
+func (crn *CronService) Start() error {
+	log.Print("通道线程已经开启")
 	crn.Ch = make(chan *job.CronJob, 1000)
 	crn.Sign = make(chan int, 2)
 	crn.Table = &job.JobHashTable{}
@@ -25,6 +26,7 @@ func (crn *CronService) Start() {
 	}()
 	crn.runListener()
 	crn.runCron()
+	return nil
 }
 
 func (crn *CronService) SetOpt(opt *base.ClientOpt) {

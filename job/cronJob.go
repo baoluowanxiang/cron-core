@@ -11,7 +11,7 @@ type CronJob struct {
 	Schema  string
 	Data    interface{}
 	state   int          // 任务状态
-	entryId cron.EntryID // entryid
+	entryId cron.EntryID // entryId
 	OPC     int          // opc 操作类型
 }
 
@@ -57,11 +57,12 @@ func (j *CronJob) GetOpc() int {
 	return j.OPC
 }
 
-func (j *CronJob) Create(id int, schema string, data interface{}) {
+func (j *CronJob) Create(id int, schema string, data interface{}) *CronJob {
 	j.ID = id
 	j.Data = data
 	j.Schema = schema
 	j.OPC = CRON_OPC_ADD
+	return j
 }
 
 func (j *CronJob) Delete(id int) {
