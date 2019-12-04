@@ -17,7 +17,6 @@ type CronService struct {
 }
 
 func (crn *CronService) Start() error {
-	log.Print("通道线程已经开启")
 	crn.Ch = make(chan *job.CronJob, 1000)
 	crn.Sign = make(chan int, 2)
 	crn.Table = &job.JobHashTable{}
@@ -34,6 +33,7 @@ func (crn *CronService) SetOpt(opt *base.ClientOpt) {
 }
 
 func (crn *CronService) AddCron(cronJob *job.CronJob) {
+	log.Print(cronJob)
 	cronJob.OPC = job.CRON_OPC_ADD
 	crn.Ch <- cronJob
 }
@@ -71,15 +71,15 @@ func (crn *CronService) runListener() {
 
 func (crn *CronService) invokeJob(j *job.CronJob) {
 	if j.OPC == job.CRON_OPC_ADD {
-		entityId, err := crn.cron.AddJob(j.GetJobSchema(), j)
-		if err != nil {
-			log.Print(err)
-			return
+		if crn.Table.SetJob(j.ID, j) {
+			entityId, err := crn.cron.AddJob(j.GetJobSchema(), j)
+			if err != nil {
+				log.Print(err)
+				return
+			}
+			j.SetState(job.CRON_STATE_ON)
+			j.SetEntryId(entityId)
 		}
-		j.SetState(job.CRON_STATE_ON)
-		j.SetEntryId(entityId)
-		crn.Table.SetJob(j.ID, j)
-
 	} else if j.OPC == job.CRON_OPC_REMOVE {
 		if j.GetState() != job.CRON_STATE_ON || j.GetEntryId() <= 0 {
 			return

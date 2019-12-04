@@ -2,10 +2,12 @@ package service
 
 import (
 	"crontab/base"
-	job2 "crontab/job"
+	"crontab/route"
+	cron2 "crontab/service/cron"
 	"errors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/gin-gonic/gin"
+	"log"
 	"strings"
 )
 
@@ -15,11 +17,17 @@ type HttpService struct {
 }
 
 func (h *HttpService) Start() error {
-
-	defer func() {
+	go func() {
+		err := h.exec()
+		if err != nil {
+			log.Fatal("启动http服务失败，失败原因：" + err.Error())
+		}
 		h.opt.Wg.Done()
 	}()
+	return nil
+}
 
+func (h *HttpService) exec() error {
 	port_t, err := h.opt.GetOpt("port")
 	if err != nil {
 		return err
@@ -28,7 +36,7 @@ func (h *HttpService) Start() error {
 	if !ok {
 		return errors.New("端口配置异常")
 	}
-	cron_t, err := h.opt.GetOpt("cron")
+	cron_t, err := h.opt.GetOpt("cronService")
 	cron, ok := cron_t.(*CronService)
 	if !ok {
 		return errors.New("没有获取到cron")
@@ -38,7 +46,8 @@ func (h *HttpService) Start() error {
 		return errors.New("请注入cron 服务")
 	}
 	r := gin.Default()
-	r.GET("/cron/add", h.AddJob)
+	cron2.Init(cron)
+	route.SetRouter(r)
 	_ = r.Run(":" + strings.Trim(port, ":"))
 	return nil
 }
@@ -52,19 +61,4 @@ func (h *HttpService) Crock(client *CronService) *HttpService {
 	return h
 }
 
-type AddJobRequest struct {
-	Id     int         `json:"id"`
-	Schema string      `json:"schema"`
-	Data   interface{} `json:"data"`
-}
 
-func (h *HttpService) AddJob(ctx *gin.Context) {
-	request := &AddJobRequest{}
-	err := ctx.ShouldBind(request)
-	if err != nil {
-		ctx.JSON(502, "参数异常")
-	}
-	job := &job2.CronJob{}
-	h.Client.AddCron(job.Create(request.Id, request.Schema, request.Data))
-	ctx.JSON(200, "添加成功")
-}

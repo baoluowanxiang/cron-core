@@ -3,6 +3,7 @@ package job
 import (
 	"github.com/robfig/cron/v3"
 	"log"
+	"time"
 )
 
 type CronJob struct {
@@ -70,7 +71,6 @@ func (j *CronJob) Delete(id int) {
 }
 
 func (j *CronJob) Run() {
-
+	time.Sleep(2 *time.Second)
 	log.Print(j.Data)
-
 }
