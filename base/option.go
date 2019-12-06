@@ -7,7 +7,7 @@ import (
 )
 
 const (
-	default_sign = iota << 2
+	_ = iota*2 - 1
 	JOB_SIGN_STOP_CRON
 )
 

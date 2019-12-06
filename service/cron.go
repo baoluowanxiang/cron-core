@@ -32,10 +32,18 @@ func (crn *CronService) SetOpt(opt *base.ClientOpt) {
 	crn.opt = opt
 }
 
-func (crn *CronService) AddCron(cronJob *job.CronJob) {
-	log.Print(cronJob)
-	cronJob.OPC = job.CRON_OPC_ADD
-	crn.Ch <- cronJob
+func (crn *CronService) AddCron(cronJob base.Job) (err error) {
+	log.Print("add job: ", cronJob)
+	switch cronJob.(type) {
+	case *job.CronJob:
+		var tmp interface{} = cronJob
+		cJob := tmp.(*job.CronJob)
+		cJob.OPC = job.CRON_OPC_ADD
+		crn.Ch <- cJob
+	default:
+		err = errors.New("job 类型异常")
+	}
+	return err
 }
 
 func (crn *CronService) StopCron(id int) error {
