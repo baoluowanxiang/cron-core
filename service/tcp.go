@@ -113,7 +113,7 @@ func (t *TcpService) authenticate(conn net.Conn) {
 	}
 }
 
-func (t *TcpService) validateConnection(conn net.Conn, str string) (*ClientRegisterRequest, error) {
+func (t *TcpService) validateConnection(str string) (*ClientRegisterRequest, error) {
 	request := &ClientRegisterRequest{}
 	err := json.Unmarshal([]byte(str), request)
 	if err != nil {
