@@ -104,7 +104,7 @@ func (t *TcpService) authenticate(conn net.Conn) {
 			}
 			t.saveConnection(conn, data)
 		} else {
-			_, _ = conn.Write([]byte("unauthenticate connection"))
+			_, _ = conn.Write([]byte("unAuthenticate connection, " + errc.Error()))
 			_ = conn.Close()
 		}
 	}
