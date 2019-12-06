@@ -51,7 +51,6 @@ func (t *TcpService) exec() error {
 func (t *TcpService) waitForConnection(listener net.Listener) {
 	var connChan = make(chan net.Conn)
 	go func() {
-		//开启监听
 		for {
 			conn, err := listener.Accept()
 			if err != nil {
@@ -70,17 +69,14 @@ func (t *TcpService) waitForConnection(listener net.Listener) {
 }
 
 func (t *TcpService) authenticate(conn net.Conn) {
-
 	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
 	defer func() {
 		_ = conn.Close()
 	}()
-
 	for {
 		cmd, err := rw.ReadString('\n')
 		cmd = strings.Trim(cmd, "\n ")
 		log.Print(cmd)
-		//runtime.Gosched()
 		switch {
 		case err == io.EOF:
 			fmt.Println("客户端关闭连接.")
