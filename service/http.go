@@ -41,12 +41,19 @@ func (h *HttpService) exec() error {
 	if !ok {
 		return errors.New("没有获取到cron")
 	}
+
+	tcp_t, err := h.opt.GetOpt("tcpService")
+	tcp, ok := tcp_t.(*TcpService)
+	if !ok {
+		return errors.New("没有获取到tcp服务")
+	}
+
 	h.Client = cron
 	if h.Client == nil {
 		return errors.New("请注入cron 服务")
 	}
 	r := gin.Default()
-	cron2.Init(cron)
+	cron2.Init(cron, tcp)
 	route.SetRouter(r)
 	_ = r.Run(":" + strings.Trim(port, ":"))
 	return nil
@@ -60,5 +67,3 @@ func (h *HttpService) Crock(client *CronService) *HttpService {
 	h.Client = client
 	return h
 }
-
-

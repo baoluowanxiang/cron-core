@@ -1,7 +1,7 @@
 package base
 
 type Runner interface {
-	Run()
+	Run(data JobData)
 }
 
 type BaseRunner struct {

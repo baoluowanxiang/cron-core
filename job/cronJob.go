@@ -2,7 +2,6 @@ package job
 
 import (
 	"crontab/base"
-	runner2 "crontab/runner"
 	"github.com/robfig/cron/v3"
 	"log"
 )
@@ -11,10 +10,11 @@ type CronJob struct {
 	ID      int // 远程jobID
 	Type    int // job 类型
 	Schema  string
-	Data    interface{}
+	Data    *JobData
 	state   int          // 任务状态
 	entryId cron.EntryID // entryId
 	OPC     int          // opc 操作类型
+	runner  base.Runner
 }
 
 const (
@@ -80,9 +80,8 @@ func (j *CronJob) SetOpc(opc int) {
 	j.OPC = opc
 }
 
-func (j *CronJob) Create(id int, jType int, schema string, data interface{}) *CronJob {
+func (j *CronJob) Create(id int, schema string, data *JobData) *CronJob {
 	j.ID = id
-	j.Type = jType
 	j.Data = data
 	j.Schema = schema
 	j.OPC = CRON_OPC_ADD
@@ -93,17 +92,13 @@ func (j *CronJob) Delete(id int) {
 
 }
 
+func (j *CronJob) SetRunner(rner base.Runner) {
+	j.runner = rner
+}
+
 func (j *CronJob) Run() {
 	log.Print(j.Data)
-	var runner base.Runner
-	if j.Type == JOB_TCP {
-		runner = &runner2.TcpRunner{}
-	} else if j.Type == JOB_CMD {
-		runner = &runner2.HttpRunner{}
-	} else {
-		runner = &runner2.HttpRunner{}
-	}
 	go func() {
-		runner.Run()
+		j.runner.Run(j.Data)
 	}()
 }
