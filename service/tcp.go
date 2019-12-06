@@ -83,10 +83,10 @@ func (t *TcpService) authenticate(conn net.Conn) {
 		//runtime.Gosched()
 		switch {
 		case err == io.EOF:
-			fmt.Println("读取完成.")
+			fmt.Println("客户端关闭连接.")
 			return
 		case err != nil:
-			fmt.Println("读取出错")
+			fmt.Println("连接中断")
 			return
 		}
 	}
