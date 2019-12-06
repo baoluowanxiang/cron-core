@@ -94,7 +94,7 @@ func (t *TcpService) authenticate(conn net.Conn) {
 		authString, err := rw.ReadString('\n')
 		authString = strings.Trim(authString, "\n ")
 		log.Print(authString, err)
-		if data, errc := t.validateConnection(conn, authString); errc == nil {
+		if data, errc := t.validateConnection(authString); errc == nil {
 			switch {
 			case err == io.EOF: //客户端关闭了连接
 				_ = conn.Close()
