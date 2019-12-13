@@ -6,3 +6,8 @@ type CronAgent struct {
 	Ip		  string 	`gorm:"ip"`
 	Status	  int 		`gorm:"status"`
 }
+
+const (
+	CronAgentOnLine = 1
+	CronAgentOffLine = 2
+)
