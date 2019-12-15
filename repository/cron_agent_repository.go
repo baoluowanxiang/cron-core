@@ -7,9 +7,7 @@ import (
 
 var CronAgent = cronAgentRepository{}
 
-
 type cronAgentRepository struct {
-
 }
 
 func (t *cronAgentRepository) Save(agent entity.CronAgent) {
@@ -22,4 +20,3 @@ func (t *cronAgentRepository) Save(agent entity.CronAgent) {
 	}()
 	db.Create(agent)
 }
-
