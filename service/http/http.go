@@ -1,9 +1,10 @@
-package service
+package http
 
 import (
 	"crontab/base"
 	"crontab/route"
 	cron2 "crontab/service/cron"
+	tcp2 "crontab/service/tcp"
 	"errors"
 	"github.com/gin-gonic/gin"
 	_ "github.com/gin-gonic/gin"
@@ -13,7 +14,7 @@ import (
 
 type HttpService struct {
 	opt    *base.ClientOpt
-	Client *CronService
+	Client *cron2.CronService
 }
 
 func (h *HttpService) Start() error {
@@ -37,13 +38,13 @@ func (h *HttpService) exec() error {
 		return errors.New("端口配置异常")
 	}
 	cron_t, err := h.opt.GetOpt("cronService")
-	cron, ok := cron_t.(*CronService)
+	cron, ok := cron_t.(*cron2.CronService)
 	if !ok {
 		return errors.New("没有获取到cron")
 	}
 
 	tcp_t, err := h.opt.GetOpt("tcpService")
-	tcp, ok := tcp_t.(*TcpService)
+	tcp, ok := tcp_t.(*tcp2.TcpService)
 	if !ok {
 		return errors.New("没有获取到tcp服务")
 	}
@@ -63,7 +64,7 @@ func (h *HttpService) SetOpt(opt *base.ClientOpt) {
 	h.opt = opt
 }
 
-func (h *HttpService) Crock(client *CronService) *HttpService {
+func (h *HttpService) Crock(client *cron2.CronService) *HttpService {
 	h.Client = client
 	return h
 }

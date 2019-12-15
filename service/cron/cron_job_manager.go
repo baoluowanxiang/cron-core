@@ -7,9 +7,9 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-var Manager CronJobManager
+var Manager cronJobManager
 
-type CronJobManager struct {
+type cronJobManager struct {
 	Cron base.CronService
 	Tcp  base.TcpService
 }
@@ -20,7 +20,7 @@ type AddJobRequest struct {
 	Data   string `json:"data" form:"data"`
 }
 
-func (t *CronJobManager) AddJob(ctx *gin.Context) {
+func (t *cronJobManager) AddJob(ctx *gin.Context) {
 	request := &AddJobRequest{}
 	err := ctx.ShouldBind(request)
 	if err != nil {
@@ -42,5 +42,5 @@ func (t *CronJobManager) AddJob(ctx *gin.Context) {
 }
 
 func Init(cron base.CronService, tcp base.TcpService) {
-	Manager = CronJobManager{cron, tcp}
+	Manager = cronJobManager{cron, tcp}
 }

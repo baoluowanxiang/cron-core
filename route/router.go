@@ -2,6 +2,7 @@ package route
 
 import (
 	"crontab/service/cron"
+	"crontab/service/tcp"
 	"github.com/gin-gonic/gin"
 )
 
@@ -11,5 +12,5 @@ func SetRouter(r *gin.Engine) {
 	r.POST("/cron/add", cron.Manager.AddJob)
 
 	// 查询执行端列表
-
+	r.GET("/cron/agent/list", tcp.GetServiceList)
 }
