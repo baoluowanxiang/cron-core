@@ -5,3 +5,8 @@ type Result struct {
 	Data interface{} `json:"data"`
 	Msg  string      `json:"msg"`
 }
+
+const (
+	CodeSuccess = 1
+	CodeError   = -1
+)

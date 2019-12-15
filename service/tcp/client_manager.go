@@ -23,7 +23,7 @@ func GetServiceList(ctx *gin.Context) {
 			clt.Status = 1
 		}
 	}
-	result.Code = 1
+	result.Code = entity.CodeSuccess
 	result.Data = list
 	ctx.JSON(200, result)
 }
