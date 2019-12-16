@@ -3,11 +3,13 @@ package tcp
 import (
 	"crontab/entity"
 	"github.com/gin-gonic/gin"
+	"log"
 )
 
 type client struct {
 	Name   string `json:"name"`
 	Host   string `json:"host"`
+	Schema string `json:"schema"`
 	Status int    `json:"status"`
 }
 
@@ -15,12 +17,15 @@ type client struct {
 func GetServiceList(ctx *gin.Context) {
 	result := entity.Result{}
 	list := []client{}
+	log.Print(connHashMap)
 	for name, conns := range connHashMap {
 		for _, conn := range conns {
 			clt := client{}
 			clt.Name = name
-			clt.Host = (*conn).LocalAddr().Network()
+			clt.Schema = (*conn).RemoteAddr().Network()
+			clt.Host = (*conn).RemoteAddr().String()
 			clt.Status = 1
+			list = append(list, clt)
 		}
 	}
 	result.Code = entity.CodeSuccess

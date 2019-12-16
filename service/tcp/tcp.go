@@ -167,6 +167,7 @@ func (t *TcpService) saveConnection(conn net.Conn, req *ClientRegisterRequest) {
 	list = append(list, &conn)
 	connHashMap[req.ServiceName] = list
 	t.connMutex.Unlock()
+	log.Print(connHashMap)
 }
 
 func (t *TcpService) loop() {
