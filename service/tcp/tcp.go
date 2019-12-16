@@ -20,8 +20,13 @@ type TcpService struct {
 	connMutex sync.Mutex
 }
 
+type connInfo struct {
+	Conn         *net.Conn
+	RegisterTime time.Time
+}
+
 // 连接服务hash表
-type connMap map[string][]*net.Conn
+type connMap map[string][]*connInfo
 
 // client 注册请求
 type ClientRegisterRequest struct {
@@ -52,13 +57,13 @@ func (t *TcpService) Send(data base.JobData) {
 	srvName := data.GetServiceName()
 	conns, ok := connHashMap[srvName]
 	if !ok {
-		log.Print("服务未注册")
+		log.Print("未发现注册的服务")
 		return
 	}
-	intn := len(conns)
-	conn := conns[rand.Intn(intn)]
+	intN := len(conns)
+	conn := conns[rand.Intn(intN)]
 	msg := data.GetMessage()
-	_, err := (*conn).Write([]byte(msg + "\n"))
+	_, err := (*(*conn).Conn).Write([]byte(msg + "\n"))
 	log.Print(err)
 }
 
@@ -158,13 +163,15 @@ func (t *TcpService) validateConnection(conn net.Conn, str string) (*ClientRegis
 
 // 保存链接
 func (t *TcpService) saveConnection(conn net.Conn, req *ClientRegisterRequest) {
-	var list []*net.Conn
+	var list []*connInfo
 	t.connMutex.Lock()
 	list, ok := connHashMap[req.ServiceName]
 	if !ok {
-		list = []*net.Conn{}
+		list = []*connInfo{}
 	}
-	list = append(list, &conn)
+	cinfo := &connInfo{Conn: &conn}
+	cinfo.RegisterTime = time.Now()
+	list = append(list, cinfo)
 	connHashMap[req.ServiceName] = list
 	t.connMutex.Unlock()
 	log.Print(connHashMap)

@@ -3,7 +3,6 @@ package job
 import (
 	"crontab/base"
 	"github.com/robfig/cron/v3"
-	"log"
 )
 
 type CronJob struct {
@@ -97,7 +96,6 @@ func (j *CronJob) SetRunner(rner base.Runner) {
 }
 
 func (j *CronJob) Run() {
-	log.Print(j.Data)
 	go func() {
 		j.runner.Run(j.Data)
 	}()

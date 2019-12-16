@@ -2,7 +2,9 @@ package cron
 
 import (
 	"crontab/base"
+	"crontab/entity"
 	"crontab/job"
+	repository "crontab/repository"
 	runner2 "crontab/runner"
 	"github.com/gin-gonic/gin"
 )
@@ -17,7 +19,7 @@ type cronJobManager struct {
 type AddJobRequest struct {
 	Id     int    `json:"id" form:"id"`
 	Schema string `json:"schema" form:"schema"`
-	Data   string `json:"data" form:"data"`
+	Route  string `json:"route" form:"route"`
 }
 
 func (t *cronJobManager) AddJob(ctx *gin.Context) {
@@ -31,7 +33,7 @@ func (t *cronJobManager) AddJob(ctx *gin.Context) {
 	j := &job.CronJob{}
 	data := new(job.JobData)
 	data.SetServiceName("tms")
-	data.SetMessage(request.Data)
+	data.SetMessage(request.Route)
 	j.Create(request.Id, request.Schema, data).SetRunner(runner)
 	err = t.Cron.AddCron(j)
 	if err != nil {
@@ -39,6 +41,16 @@ func (t *cronJobManager) AddJob(ctx *gin.Context) {
 		return
 	}
 	ctx.JSON(200, "添加成功")
+}
+
+func (t *cronJobManager) GetJobList(ctx *gin.Context) {
+	result := entity.Result{}
+	repos := repository.JobRepository{}
+	list := repos.GetJobList()
+	result.Code = entity.CodeSuccess
+	result.Data = list
+	result.Msg = "查询成功"
+	ctx.JSON(200, result)
 }
 
 func Init(cron base.CronService, tcp base.TcpService) {
