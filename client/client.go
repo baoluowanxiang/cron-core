@@ -13,6 +13,16 @@ func main() {
 func resolve(r *client_wrapper.Route) {
 	r.Put("test", Test)
 	r.Put("example", Example)
+	r.Put("example", Example)
+	r.Put("example", Example)
+	r.Put("example", Example)
+	r.Put("example", Example)
+	r.Put("example", Example)
+	r.Put("example", Example)
+	r.Put("example", Example)
+	r.Put("example", Example)
+	r.Put("example", Example)
+	r.Put("example", Example)
 }
 
 func Test(task client_wrapper.TaskInfo) {

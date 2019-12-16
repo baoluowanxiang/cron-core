@@ -41,14 +41,13 @@ func (cw *ConnectionWrapper) Connect() {
 		_ = conn.Close()
 	}()
 	log.Println(conn.LocalAddr().String() + " : Client connected!")
-
 	// 初始化路由
 	cw.Resolver.resolve()
-
-	// 注册
+	// 注册并认证服务
 	info := registerInfo{"tms", "aaaaaaaaaaaaaaaaaaaaaaa"}
-	_info, _ := json.Marshal(info)
-	_, _ = conn.Write([]byte(fmt.Sprintf("%s\n", string(_info))))
+	infoBytes, _ := json.Marshal(info)
+	_, _ = conn.Write([]byte(fmt.Sprintf("%s\n", string(infoBytes))))
+	// 等待服务响应
 	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
 	for {
 		str, err := rw.ReadString('\n')
@@ -59,23 +58,20 @@ func (cw *ConnectionWrapper) Connect() {
 				continue
 			default: //连接断开了
 				_ = conn.Close()
-				goto end
+				return
 			}
 		}
 		cw.resolve(str)
 	}
-end:
 }
 
 // 解析分发数据
 func (cw *ConnectionWrapper) resolve(str string) {
 	task := TaskInfo{}
-	log.Print(str)
 	err := json.Unmarshal([]byte(str), &task)
 	if err != nil {
 		log.Print("接收到的任务数据异常: ", err)
-		goto end
+	} else {
+		cw.Resolver.execute(task)
 	}
-	cw.Resolver.execute(task)
-end:
 }
