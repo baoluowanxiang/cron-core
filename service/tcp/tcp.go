@@ -1,4 +1,4 @@
-package service
+package tcp
 
 import (
 	"bufio"
@@ -31,9 +31,6 @@ type ClientRegisterRequest struct {
 
 // 连接映射表
 var connHashMap = connMap{}
-
-// 连接通道
-var jobChannel = make(chan *net.Conn)
 
 func (t *TcpService) Start() error {
 	//var timeOut chan string
@@ -112,20 +109,20 @@ func (t *TcpService) authenticate(conn net.Conn) {
 			switch {
 			case err == io.EOF: //客户端关闭了连接
 				_ = conn.Close()
-				goto End
+				goto end
 			case err != nil: //连接断开了
 				_ = conn.Close()
-				goto End
+				goto end
 			}
 			t.saveConnection(conn, data)
-			goto End
+			goto end
 		} else {
 			_, _ = conn.Write([]byte("unAuthenticate connection, " + errc.Error()))
 			_ = conn.Close()
-			goto End
+			goto end
 		}
 	}
-End:
+end:
 	{
 		done <- 1
 	}

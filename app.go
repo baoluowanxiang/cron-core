@@ -2,7 +2,9 @@ package main
 
 import (
 	"crontab/base"
-	"crontab/service"
+	cron2 "crontab/service/cron"
+	http2 "crontab/service/http"
+	tcp2 "crontab/service/tcp"
 	"sync"
 	"time"
 )
@@ -17,9 +19,9 @@ func main() {
 	}
 
 	// 服务
-	cron := new(service.CronService)
-	http := new(service.HttpService)
-	tcp := new(service.TcpService)
+	cron := new(cron2.CronService)
+	http := new(http2.HttpService)
+	tcp := new(tcp2.TcpService)
 
 	// 设置通道
 	client.SetOpt(client.NewOpt("port", "3000"))
