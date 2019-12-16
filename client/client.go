@@ -6,12 +6,19 @@ import (
 )
 
 func main() {
-	connection := &client_wrapper.ConnectionWrapper{}
+	connection := &client_wrapper.ConnectionWrapper{resolve}
 	connection.Connect()
 }
 
-func resolve(r client_wrapper.Resolver, task client_wrapper.TaskInfo) {
-	r.Resolve("test", func(task client_wrapper.TaskInfo) {
-		log.Print(task)
-	})
+func resolve(r *client_wrapper.Route) {
+	r.Put("test", Test)
+	r.Put("example", Example)
+}
+
+func Test(task client_wrapper.TaskInfo) {
+	log.Print(task)
+}
+
+func Example(task client_wrapper.TaskInfo) {
+	log.Print("example: ", task.Params)
 }

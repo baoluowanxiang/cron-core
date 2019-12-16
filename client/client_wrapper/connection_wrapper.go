@@ -42,6 +42,9 @@ func (cw *ConnectionWrapper) Connect() {
 	}()
 	log.Println(conn.LocalAddr().String() + " : Client connected!")
 
+	// 初始化路由
+	cw.Resolver.resolve()
+
 	// 注册
 	info := registerInfo{"tms", "aaaaaaaaaaaaaaaaaaaaaaa"}
 	_info, _ := json.Marshal(info)
@@ -66,11 +69,13 @@ end:
 
 // 解析分发数据
 func (cw *ConnectionWrapper) resolve(str string) {
-	task := &TaskInfo{}
-	err := json.Unmarshal([]byte(str), task)
+	task := TaskInfo{}
+	log.Print(str)
+	err := json.Unmarshal([]byte(str), &task)
 	if err != nil {
-		log.Print("接收到的任务数据异常")
+		log.Print("接收到的任务数据异常: ", err)
 		goto end
 	}
+	cw.Resolver.execute(task)
 end:
 }
