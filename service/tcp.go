@@ -3,8 +3,6 @@ package service
 import (
 	"bufio"
 	"crontab/base"
-	"crontab/entity"
-	"crontab/repository"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -172,13 +170,6 @@ func (t *TcpService) saveConnection(conn net.Conn, req *ClientRegisterRequest) {
 	list = append(list, &conn)
 	connHashMap[req.ServiceName] = list
 	t.connMutex.Unlock()
-
-	// 服务端入库
-	agent := entity.CronAgent{}
-	agent.Service = req.ServiceName
-	agent.Status = entity.CronAgentOnLine
-	agent.Ip = conn.RemoteAddr().String()
-	repository.CronAgent.Save(agent)
 }
 
 func (t *TcpService) loop() {
