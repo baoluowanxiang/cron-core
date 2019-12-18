@@ -2,6 +2,7 @@ package main
 
 import (
 	"crontab/base"
+	"crontab/route"
 	cron2 "crontab/service/cron"
 	http2 "crontab/service/http"
 	tcp2 "crontab/service/tcp"
@@ -22,12 +23,10 @@ func main() {
 	cron := new(cron2.CronService)
 	http := new(http2.HttpService)
 	tcp := new(tcp2.TcpService)
-
 	// 设置通道
 	client.SetOpt(client.NewOpt("port", "3000"))
 	client.SetOpt(client.NewOpt("cronService", cron))
 	client.SetOpt(client.NewOpt("tcpService", tcp))
-
 	// 注册服务
 	registService(client, cron, http, tcp)
 	client.Wg.Wait()
@@ -38,9 +37,13 @@ func main() {
 
 // 注册服务
 func registService(client *base.ClientOpt, services ...base.Service) {
+	// 路由
+	router := &route.Router{}
+
 	for _, srv := range services {
 		client.Wg.Add(1)
 		srv.SetOpt(client)
+		srv.WithRouter(router)
 		var wg = sync.WaitGroup{}
 		wg.Add(1)
 		go func() {

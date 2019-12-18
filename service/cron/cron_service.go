@@ -32,6 +32,10 @@ func (crn *CronService) SetOpt(opt *base.ClientOpt) {
 	crn.opt = opt
 }
 
+func (h *CronService) WithRouter(rt base.Router) {
+
+}
+
 func (crn *CronService) AddCron(cronJob base.Job) (err error) {
 	switch cronJob.(type) {
 	case *job.CronJob:

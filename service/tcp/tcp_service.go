@@ -15,7 +15,8 @@ import (
 )
 
 type TcpService struct {
-	opt *base.ClientOpt
+	opt    *base.ClientOpt
+	Router base.Router
 }
 
 func (t *TcpService) Start() error {
@@ -31,6 +32,10 @@ func (t *TcpService) Start() error {
 
 func (t *TcpService) SetOpt(opt *base.ClientOpt) {
 	t.opt = opt
+}
+
+func (h *TcpService) WithRouter(rt base.Router) {
+	h.Router = rt
 }
 
 func (t *TcpService) Send(data base.JobData) {
@@ -56,9 +61,9 @@ func (t *TcpService) exec() error {
 	log.Print("tcp service start at port: 0.0.0.0:9600")
 	// 等待连接认证
 	go t.waitForConnection(listener)
+
 	// 等待消息
 	go t.loop()
-
 	return nil
 }
 
@@ -145,5 +150,8 @@ func (t *TcpService) saveConnection(conn *net.Conn, req *ClientRegisterRequest) 
 }
 
 func (t *TcpService) loop() {
+	router := t.Router
+	rmp := &RouterMap{}
+	router.SetTcpRouter(rmp)
 	connHashMap.loop()
 }

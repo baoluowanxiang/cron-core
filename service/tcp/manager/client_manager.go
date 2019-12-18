@@ -1,9 +1,9 @@
-package tcp
+package manager
 
 import (
 	"crontab/entity"
+	"crontab/service/tcp"
 	"github.com/gin-gonic/gin"
-	"log"
 	"time"
 )
 
@@ -19,8 +19,8 @@ type client struct {
 func GetServiceList(ctx *gin.Context) {
 	result := entity.Result{}
 	list := []client{}
-	log.Print(connHashMap)
-	for name, conns := range connHashMap {
+	connMap := tcp.GetConnMap()
+	for name, conns := range connMap {
 		for _, info := range conns {
 			clt := client{}
 			clt.Name = name

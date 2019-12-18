@@ -3,6 +3,7 @@ package base
 type Service interface {
 	SetOpt(opt *ClientOpt)
 	Start() error
+	WithRouter(Router)
 }
 
 type CronService interface {

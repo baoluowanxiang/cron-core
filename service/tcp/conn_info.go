@@ -12,6 +12,6 @@ type connInfo struct {
 	RegisterTime time.Time
 }
 
-func (c *connInfo) wait() {
+func (c *connInfo) waitForMessage() {
 
 }

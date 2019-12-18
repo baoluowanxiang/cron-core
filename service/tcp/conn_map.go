@@ -7,15 +7,15 @@ import (
 )
 
 // 连接映射表
-var connHashMap = connMap{}
+var connHashMap = ConnMap{}
 
 var connChan = make(chan *connInfo)
 
 // 连接服务hash表
-type connMap map[string][]*connInfo
+type ConnMap map[string][]*connInfo
 
 // 添加连接
-func (c *connMap) addConn(conn *net.Conn, serviceName string) {
+func (c *ConnMap) addConn(conn *net.Conn, serviceName string) {
 	var list []*connInfo
 	var connMutex = sync.Mutex{}
 	connMutex.Lock()
@@ -34,8 +34,12 @@ func (c *connMap) addConn(conn *net.Conn, serviceName string) {
 }
 
 // 监听服务连接
-func (c *connMap) loop() {
+func (c *ConnMap) loop() {
 	for cInfo := range connChan {
-		go cInfo.wait()
+		go cInfo.waitForMessage()
 	}
+}
+
+func GetConnMap() ConnMap {
+	return connHashMap
 }

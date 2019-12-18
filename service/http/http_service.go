@@ -2,8 +2,8 @@ package http
 
 import (
 	"crontab/base"
-	"crontab/route"
 	cron2 "crontab/service/cron"
+	"crontab/service/cron/manager"
 	tcp2 "crontab/service/tcp"
 	"errors"
 	"github.com/gin-gonic/gin"
@@ -15,6 +15,7 @@ import (
 type HttpService struct {
 	opt    *base.ClientOpt
 	Client *cron2.CronService
+	Router base.Router
 }
 
 func (h *HttpService) Start() error {
@@ -26,6 +27,19 @@ func (h *HttpService) Start() error {
 		h.opt.Wg.Done()
 	}()
 	return nil
+}
+
+func (h *HttpService) SetOpt(opt *base.ClientOpt) {
+	h.opt = opt
+}
+
+func (h *HttpService) Crock(client *cron2.CronService) *HttpService {
+	h.Client = client
+	return h
+}
+
+func (h *HttpService) WithRouter(rt base.Router) {
+	h.Router = rt
 }
 
 func (h *HttpService) exec() error {
@@ -53,18 +67,11 @@ func (h *HttpService) exec() error {
 	if h.Client == nil {
 		return errors.New("请注入cron 服务")
 	}
+
 	r := gin.Default()
-	cron2.Init(cron, tcp)
-	route.SetHttpRouter(r)
+	manager.Init(cron, tcp)
+	h.Router.SetHttpRouter(r)
+
 	_ = r.Run(":" + strings.Trim(port, ":"))
 	return nil
-}
-
-func (h *HttpService) SetOpt(opt *base.ClientOpt) {
-	h.opt = opt
-}
-
-func (h *HttpService) Crock(client *cron2.CronService) *HttpService {
-	h.Client = client
-	return h
 }
