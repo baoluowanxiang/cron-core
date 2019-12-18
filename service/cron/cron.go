@@ -33,7 +33,6 @@ func (crn *CronService) SetOpt(opt *base.ClientOpt) {
 }
 
 func (crn *CronService) AddCron(cronJob base.Job) (err error) {
-	log.Print("add job: ", cronJob)
 	switch cronJob.(type) {
 	case *job.CronJob:
 		var tmp interface{} = cronJob

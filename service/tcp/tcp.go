@@ -62,8 +62,9 @@ func (t *TcpService) Send(data base.JobData) {
 	}
 	intN := len(conns)
 	conn := conns[rand.Intn(intN)]
-	msg := data.GetMessage()
-	_, err := (*(*conn).Conn).Write([]byte(msg + "\n"))
+	dataBytes, _ := json.Marshal(data.GetData())
+	log.Print(string(dataBytes))
+	_, err := (*(*conn).Conn).Write([]byte(string(dataBytes) + "\n"))
 	log.Print(err)
 }
 
@@ -109,7 +110,7 @@ func (t *TcpService) authenticate(conn net.Conn) {
 	t.timeAccurate(conn, done)
 	for {
 		authString, err := rw.ReadString('\n')
-		authString = strings.Trim(authString, "\n ")
+		authString = strings.Trim(authString, "\n")
 		if data, errc := t.validateConnection(conn, authString); errc == nil {
 			switch {
 			case err == io.EOF: //客户端关闭了连接

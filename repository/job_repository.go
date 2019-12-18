@@ -9,7 +9,7 @@ type JobRepository struct {
 }
 
 // 保存任务
-func (j *JobRepository) Save(job entity.Job) {
+func (j *JobRepository) Save(job *entity.Job) {
 	orm.GlobalDb.Table((&entity.Job{}).TableName()).Save(job)
 }
 
