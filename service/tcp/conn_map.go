@@ -1,6 +1,8 @@
 package tcp
 
 import (
+	"crontab/base"
+	"log"
 	"net"
 	"sync"
 	"time"
@@ -15,7 +17,7 @@ var connChan = make(chan *connInfo)
 type ConnMap map[string][]*connInfo
 
 // 添加连接
-func (c *ConnMap) addConn(conn *net.Conn, serviceName string) {
+func (c *ConnMap) addConn(conn *net.Conn, serviceName string, rp base.RouterMap) {
 	var list []*connInfo
 	var connMutex = sync.Mutex{}
 	connMutex.Lock()
@@ -27,6 +29,7 @@ func (c *ConnMap) addConn(conn *net.Conn, serviceName string) {
 	cInfo.Conn = conn
 	cInfo.ServiceName = serviceName
 	cInfo.RegisterTime = time.Now()
+	cInfo.RouterMap = rp
 	list = append(list, cInfo)
 	(*c)[serviceName] = list
 	connMutex.Unlock()
@@ -36,8 +39,27 @@ func (c *ConnMap) addConn(conn *net.Conn, serviceName string) {
 // 监听服务连接
 func (c *ConnMap) loop() {
 	for cInfo := range connChan {
-		go cInfo.waitForMessage()
+		go func() {
+			err := cInfo.waitForMessage()
+			log.Print("err:", err)
+			if err != nil {
+				c.deleteConn(cInfo)
+			}
+		}()
 	}
+}
+
+// 删除连接
+func (c *ConnMap) deleteConn(info *connInfo) {
+	list := (*c)[info.ServiceName]
+	j := 0
+	for _, info_c := range list {
+		if info_c != info {
+			list[j] = info_c
+			j++
+		}
+	}
+	(*c)[info.ServiceName] = list[:j]
 }
 
 func GetConnMap() ConnMap {
