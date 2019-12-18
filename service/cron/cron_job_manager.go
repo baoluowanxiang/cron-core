@@ -40,6 +40,7 @@ func (t *cronJobManager) AddJob(ctx *gin.Context) {
 	jobEntity := &entity.Job{}
 	jobEntity.Name = request.Name
 	jobEntity.Schema = request.Schema
+	jobEntity.Job = request.Job
 	jobEntity.ServiceName = request.Service
 	jobEntity.CreateTime = time.Now()
 	repos := repository.JobRepository{}
