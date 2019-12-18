@@ -2,7 +2,6 @@ package tcp
 
 import (
 	"crontab/base"
-	"log"
 	"net"
 	"sync"
 	"time"
@@ -40,10 +39,10 @@ func (c *ConnMap) addConn(conn *net.Conn, serviceName string, rp base.RouterMap)
 func (c *ConnMap) loop() {
 	for cInfo := range connChan {
 		go func() {
-			err := cInfo.waitForMessage()
-			log.Print("err:", err)
+			// 地址会被覆盖
+			info, err := cInfo.waitForMessage()
 			if err != nil {
-				c.deleteConn(cInfo)
+				c.deleteConn(info)
 			}
 		}()
 	}

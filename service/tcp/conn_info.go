@@ -18,16 +18,16 @@ type connInfo struct {
 	RouterMap    base.RouterMap
 }
 
-func (c *connInfo) waitForMessage() error {
+func (c *connInfo) waitForMessage() (*connInfo, error) {
 	rw := bufio.NewReadWriter(bufio.NewReader(*c.Conn), bufio.NewWriter(*c.Conn))
 	for {
 		askStr, err := rw.ReadString('\n')
 		askStr = strings.Trim(askStr, "\n")
 		switch {
 		case err == io.EOF: //客户端关闭了连接
-			return errors.New("连接已关闭")
+			return c, errors.New("连接已关闭")
 		case err != nil: //连接断开了
-			return errors.New("连接已断开")
+			return c, errors.New("连接已断开")
 		}
 	}
 }
