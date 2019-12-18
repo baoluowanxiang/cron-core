@@ -7,7 +7,7 @@ import (
 	"net/http"
 )
 
-func SetRouter(r *gin.Engine) {
+func SetHttpRouter(r *gin.Engine) {
 	// 跨域
 	r.Use(cross)
 	// cron 管理
@@ -20,6 +20,10 @@ func SetRouter(r *gin.Engine) {
 		// 查询执行端列表
 		crt.GET("agent/list", tcp.GetServiceList)
 	}
+}
+
+func SetTcpRouter() {
+
 }
 
 func cross(c *gin.Context) {

@@ -55,7 +55,7 @@ func (h *HttpService) exec() error {
 	}
 	r := gin.Default()
 	cron2.Init(cron, tcp)
-	route.SetRouter(r)
+	route.SetHttpRouter(r)
 	_ = r.Run(":" + strings.Trim(port, ":"))
 	return nil
 }

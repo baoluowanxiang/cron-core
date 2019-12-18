@@ -11,31 +11,12 @@ import (
 	"math/rand"
 	"net"
 	"strings"
-	"sync"
 	"time"
 )
 
 type TcpService struct {
-	opt       *base.ClientOpt
-	connMutex sync.Mutex
+	opt *base.ClientOpt
 }
-
-type connInfo struct {
-	Conn         *net.Conn
-	RegisterTime time.Time
-}
-
-// 连接服务hash表
-type connMap map[string][]*connInfo
-
-// client 注册请求
-type ClientRegisterRequest struct {
-	ServiceName string `json:"service_name"`
-	Token       string `json:"token"`
-}
-
-// 连接映射表
-var connHashMap = connMap{}
 
 func (t *TcpService) Start() error {
 	//var timeOut chan string
@@ -50,7 +31,6 @@ func (t *TcpService) Start() error {
 
 func (t *TcpService) SetOpt(opt *base.ClientOpt) {
 	t.opt = opt
-	t.connMutex = sync.Mutex{}
 }
 
 func (t *TcpService) Send(data base.JobData) {
@@ -63,9 +43,7 @@ func (t *TcpService) Send(data base.JobData) {
 	intN := len(conns)
 	conn := conns[rand.Intn(intN)]
 	dataBytes, _ := json.Marshal(data.GetData())
-	log.Print(string(dataBytes))
-	_, err := (*(*conn).Conn).Write([]byte(string(dataBytes) + "\n"))
-	log.Print(err)
+	_, _ = (*(*conn).Conn).Write([]byte(string(dataBytes) + "\n"))
 }
 
 func (t *TcpService) exec() error {
@@ -80,6 +58,7 @@ func (t *TcpService) exec() error {
 	go t.waitForConnection(listener)
 	// 等待消息
 	go t.loop()
+
 	return nil
 }
 
@@ -111,7 +90,7 @@ func (t *TcpService) authenticate(conn net.Conn) {
 	for {
 		authString, err := rw.ReadString('\n')
 		authString = strings.Trim(authString, "\n")
-		if data, errc := t.validateConnection(conn, authString); errc == nil {
+		if request, errc := t.validateConnection(conn, authString); errc == nil {
 			switch {
 			case err == io.EOF: //客户端关闭了连接
 				_ = conn.Close()
@@ -120,7 +99,7 @@ func (t *TcpService) authenticate(conn net.Conn) {
 				_ = conn.Close()
 				goto end
 			}
-			t.saveConnection(conn, data)
+			t.saveConnection(&conn, request)
 			goto end
 		} else {
 			_, _ = conn.Write([]byte("unAuthenticate connection, " + errc.Error()))
@@ -150,9 +129,7 @@ func (t *TcpService) timeAccurate(conn net.Conn, done chan int) {
 // 验证身份
 func (t *TcpService) validateConnection(conn net.Conn, str string) (*ClientRegisterRequest, error) {
 	request := &ClientRegisterRequest{}
-	log.Print(str)
 	err := json.Unmarshal([]byte(str), request)
-	log.Print(request)
 	if err != nil {
 		return nil, errors.New("数据结构异常")
 	}
@@ -163,21 +140,10 @@ func (t *TcpService) validateConnection(conn net.Conn, str string) (*ClientRegis
 }
 
 // 保存链接
-func (t *TcpService) saveConnection(conn net.Conn, req *ClientRegisterRequest) {
-	var list []*connInfo
-	t.connMutex.Lock()
-	list, ok := connHashMap[req.ServiceName]
-	if !ok {
-		list = []*connInfo{}
-	}
-	cinfo := &connInfo{Conn: &conn}
-	cinfo.RegisterTime = time.Now()
-	list = append(list, cinfo)
-	connHashMap[req.ServiceName] = list
-	t.connMutex.Unlock()
-	log.Print(connHashMap)
+func (t *TcpService) saveConnection(conn *net.Conn, req *ClientRegisterRequest) {
+	connHashMap.addConn(conn, req.ServiceName)
 }
 
 func (t *TcpService) loop() {
-
+	connHashMap.loop()
 }
