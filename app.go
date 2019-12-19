@@ -3,9 +3,9 @@ package main
 import (
 	"crontab/base"
 	"crontab/route"
-	cron2 "crontab/service/cron"
-	http2 "crontab/service/http"
-	tcp2 "crontab/service/tcp"
+	"crontab/service/cron"
+	"crontab/service/http"
+	"crontab/service/tcp"
 	"sync"
 	"time"
 )
@@ -18,15 +18,15 @@ func main() {
 		Wg:   &sync.WaitGroup{},
 	}
 	// 服务
-	cron := new(cron2.CronService)
-	http := new(http2.HttpService)
-	tcp := new(tcp2.TcpService)
+	cronSrv := new(cron.CronService)
+	httpSrv := new(http.Service)
+	tcpSrv := new(tcp.Service)
 	// 设置通道
 	client.SetOpt(client.NewOpt("port", "3000"))
-	client.SetOpt(client.NewOpt("cronService", cron))
-	client.SetOpt(client.NewOpt("tcpService", tcp))
+	client.SetOpt(client.NewOpt("cronService", cronSrv))
+	client.SetOpt(client.NewOpt("tcpService", tcpSrv))
 	// 注册服务
-	registService(client, cron, http, tcp)
+	registService(client, cronSrv, httpSrv, tcpSrv)
 	client.Wg.Wait()
 	for {
 		time.Sleep(time.Second)

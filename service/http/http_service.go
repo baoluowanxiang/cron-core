@@ -12,13 +12,13 @@ import (
 	"strings"
 )
 
-type HttpService struct {
+type Service struct {
 	opt    *base.ClientOpt
 	Client *cron2.CronService
 	Router base.Router
 }
 
-func (h *HttpService) Start() error {
+func (h *Service) Start() error {
 	go func() {
 		err := h.exec()
 		if err != nil {
@@ -29,36 +29,36 @@ func (h *HttpService) Start() error {
 	return nil
 }
 
-func (h *HttpService) SetOpt(opt *base.ClientOpt) {
+func (h *Service) SetOpt(opt *base.ClientOpt) {
 	h.opt = opt
 }
 
-func (h *HttpService) Crock(client *cron2.CronService) *HttpService {
+func (h *Service) Crock(client *cron2.CronService) *Service {
 	h.Client = client
 	return h
 }
 
-func (h *HttpService) WithRouter(rt base.Router) {
+func (h *Service) WithRouter(rt base.Router) {
 	h.Router = rt
 }
 
-func (h *HttpService) exec() error {
-	port_t, err := h.opt.GetOpt("port")
+func (h *Service) exec() error {
+	portT, err := h.opt.GetOpt("port")
 	if err != nil {
 		return err
 	}
-	port, ok := port_t.(string)
+	port, ok := portT.(string)
 	if !ok {
 		return errors.New("端口配置异常")
 	}
-	cron_t, err := h.opt.GetOpt("cronService")
-	cron, ok := cron_t.(*cron2.CronService)
+	cronT, err := h.opt.GetOpt("cronService")
+	cron, ok := cronT.(*cron2.CronService)
 	if !ok {
 		return errors.New("没有获取到cron")
 	}
 
-	tcp_t, err := h.opt.GetOpt("tcpService")
-	tcp, ok := tcp_t.(*tcp2.TcpService)
+	tcpT, err := h.opt.GetOpt("tcpService")
+	tcp, ok := tcpT.(*tcp2.Service)
 	if !ok {
 		return errors.New("没有获取到tcp服务")
 	}
