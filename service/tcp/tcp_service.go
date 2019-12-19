@@ -20,10 +20,10 @@ type TcpService struct {
 	RouterMap base.RouterMap
 }
 
-func (t *TcpService) Start() error {
+func (ts *TcpService) Start() error {
 	//var timeOut chan string
 	go func() {
-		err := t.exec()
+		err := ts.exec()
 		if err != nil {
 			log.Fatal("启动tcp服务失败，失败原因：", err.Error())
 		}
@@ -31,15 +31,15 @@ func (t *TcpService) Start() error {
 	return nil
 }
 
-func (t *TcpService) SetOpt(opt *base.ClientOpt) {
-	t.opt = opt
+func (ts *TcpService) SetOpt(opt *base.ClientOpt) {
+	ts.opt = opt
 }
 
-func (h *TcpService) WithRouter(rt base.Router) {
-	h.Router = rt
+func (ts *TcpService) WithRouter(rt base.Router) {
+	ts.Router = rt
 }
 
-func (t *TcpService) Send(data base.JobData) {
+func (ts *TcpService) Send(data base.JobData) {
 	srvName := data.GetServiceName()
 	conns, ok := connHashMap[srvName]
 	if !ok {
@@ -52,31 +52,31 @@ func (t *TcpService) Send(data base.JobData) {
 	_, _ = (*(*conn).Conn).Write([]byte(string(dataBytes) + "\n"))
 }
 
-func (t *TcpService) exec() error {
+func (ts *TcpService) exec() error {
 	listener, err := net.Listen("tcp", "0.0.0.0:9600")
 	if err != nil {
 		log.Print("tcp service start error: ", err.Error())
 		return err
 	}
-	t.opt.Wg.Done()
+	ts.opt.Wg.Done()
 	log.Print("tcp service start at port: 0.0.0.0:9600")
 
 	// 注册路由
-	router := t.Router
+	router := ts.Router
 	rmp := &RouterMap{}
 	router.SetTcpRouter(rmp)
-	t.RouterMap = rmp
+	ts.RouterMap = rmp
 
 	// 等待连接认证
-	go t.waitForConnection(listener)
+	go ts.waitForConnection(listener)
 
 	// 等待消息
-	go t.loop()
+	go ts.loop()
 
 	return nil
 }
 
-func (t *TcpService) waitForConnection(listener net.Listener) {
+func (ts *TcpService) waitForConnection(listener net.Listener) {
 	var connChan = make(chan net.Conn)
 	go func() {
 		for {
@@ -91,20 +91,20 @@ func (t *TcpService) waitForConnection(listener net.Listener) {
 	for {
 		select {
 		case cc := <-connChan:
-			go t.authenticate(cc)
+			go ts.authenticate(cc)
 		}
 	}
 }
 
 // 接受数据， 验证身份
-func (t *TcpService) authenticate(conn net.Conn) {
+func (ts *TcpService) authenticate(conn net.Conn) {
 	rw := bufio.NewReadWriter(bufio.NewReader(conn), bufio.NewWriter(conn))
 	done := make(chan int)
-	t.timeAccurate(conn, done)
+	ts.timeAccurate(conn, done)
 	for {
 		authString, err := rw.ReadString('\n')
 		authString = strings.Trim(authString, "\n")
-		if request, errc := t.validateConnection(conn, authString); errc == nil {
+		if request, errc := ts.validateConnection(conn, authString); errc == nil {
 			switch {
 			case err == io.EOF: //客户端关闭了连接
 				_ = conn.Close()
@@ -113,7 +113,7 @@ func (t *TcpService) authenticate(conn net.Conn) {
 				_ = conn.Close()
 				goto end
 			}
-			t.saveConnection(&conn, request)
+			ts.saveConnection(&conn, request)
 			goto end
 		} else {
 			_, _ = conn.Write([]byte("unAuthenticate connection, " + errc.Error()))
@@ -128,7 +128,7 @@ end:
 }
 
 // 5s之内没有完成认证，就算认证失败
-func (t *TcpService) timeAccurate(conn net.Conn, done chan int) {
+func (ts *TcpService) timeAccurate(conn net.Conn, done chan int) {
 	go func() {
 		select {
 		case <-time.After(5 * time.Second):
@@ -141,7 +141,7 @@ func (t *TcpService) timeAccurate(conn net.Conn, done chan int) {
 }
 
 // 验证身份
-func (t *TcpService) validateConnection(conn net.Conn, str string) (*ClientRegisterRequest, error) {
+func (ts *TcpService) validateConnection(conn net.Conn, str string) (*ClientRegisterRequest, error) {
 	request := &ClientRegisterRequest{}
 	err := json.Unmarshal([]byte(str), request)
 	if err != nil {
@@ -154,10 +154,10 @@ func (t *TcpService) validateConnection(conn net.Conn, str string) (*ClientRegis
 }
 
 // 保存链接
-func (t *TcpService) saveConnection(conn *net.Conn, req *ClientRegisterRequest) {
-	connHashMap.addConn(conn, req.ServiceName, t.RouterMap)
+func (ts *TcpService) saveConnection(conn *net.Conn, req *ClientRegisterRequest) {
+	connHashMap.addConn(conn, req.ServiceName, ts.RouterMap)
 }
 
-func (t *TcpService) loop() {
+func (ts *TcpService) loop() {
 	connHashMap.loop()
 }
