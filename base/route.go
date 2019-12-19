@@ -7,7 +7,9 @@ type Router interface {
 	SetTcpRouter(RouterMap)
 }
 
+type RouteFn func()
+
 type RouterMap interface {
-	Put(name string, fn func())
-	Get(name string) func()
+	Put(string, RouteFn)
+	Get(name string) RouteFn
 }
