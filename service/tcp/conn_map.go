@@ -52,9 +52,9 @@ func (c *ConnMap) loop() {
 func (c *ConnMap) deleteConn(info *connInfo) {
 	list := (*c)[info.ServiceName]
 	j := 0
-	for _, info_c := range list {
-		if info_c != info {
-			list[j] = info_c
+	for _, infoC := range list {
+		if infoC != info {
+			list[j] = infoC
 			j++
 		}
 	}
