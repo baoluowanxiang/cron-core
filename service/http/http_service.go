@@ -14,7 +14,7 @@ import (
 
 type Service struct {
 	opt    *base.ClientOpt
-	Client *cron2.CronService
+	Client *cron2.Service
 	Router base.Router
 }
 
@@ -33,7 +33,7 @@ func (h *Service) SetOpt(opt *base.ClientOpt) {
 	h.opt = opt
 }
 
-func (h *Service) Crock(client *cron2.CronService) *Service {
+func (h *Service) Crock(client *cron2.Service) *Service {
 	h.Client = client
 	return h
 }
@@ -52,7 +52,7 @@ func (h *Service) exec() error {
 		return errors.New("端口配置异常")
 	}
 	cronT, err := h.opt.GetOpt("cronService")
-	cron, ok := cronT.(*cron2.CronService)
+	cron, ok := cronT.(*cron2.Service)
 	if !ok {
 		return errors.New("没有获取到cron")
 	}

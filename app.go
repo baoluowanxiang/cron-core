@@ -18,7 +18,7 @@ func main() {
 		Wg:   &sync.WaitGroup{},
 	}
 	// 服务
-	cronSrv := new(cron.CronService)
+	cronSrv := new(cron.Service)
 	httpSrv := new(http.Service)
 	tcpSrv := new(tcp.Service)
 	// 设置通道

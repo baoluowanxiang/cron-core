@@ -8,7 +8,7 @@ import (
 	"log"
 )
 
-type CronService struct {
+type Service struct {
 	opt   *base.ClientOpt
 	cron  *cron.Cron
 	Ch    chan *job.CronJob
@@ -16,7 +16,7 @@ type CronService struct {
 	Table *job.JobHashTable
 }
 
-func (crn *CronService) Start() error {
+func (crn *Service) Start() error {
 	crn.Ch = make(chan *job.CronJob, 1000)
 	crn.Sign = make(chan int, 2)
 	crn.Table = &job.JobHashTable{}
@@ -28,15 +28,15 @@ func (crn *CronService) Start() error {
 	return nil
 }
 
-func (crn *CronService) SetOpt(opt *base.ClientOpt) {
+func (crn *Service) SetOpt(opt *base.ClientOpt) {
 	crn.opt = opt
 }
 
-func (h *CronService) WithRouter(rt base.Router) {
+func (crn *Service) WithRouter(rt base.Router) {
 
 }
 
-func (crn *CronService) AddCron(cronJob base.Job) (err error) {
+func (crn *Service) AddCron(cronJob base.Job) (err error) {
 	switch cronJob.(type) {
 	case *job.CronJob:
 		var tmp interface{} = cronJob
@@ -49,7 +49,7 @@ func (crn *CronService) AddCron(cronJob base.Job) (err error) {
 	return err
 }
 
-func (crn *CronService) StopCron(id int) error {
+func (crn *Service) StopCron(id int) error {
 	cronJob := crn.Table.GetJob(id)
 	if cronJob != nil {
 		cronJob.OPC = job.CRON_OPC_REMOVE
@@ -59,13 +59,13 @@ func (crn *CronService) StopCron(id int) error {
 	return errors.New("没有该任务，无法停止该任务")
 }
 
-func (crn *CronService) runCron() {
+func (crn *Service) runCron() {
 	opt := cron.WithParser(cron.NewParser(cron.Second | cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow))
 	crn.cron = cron.New(opt)
 	crn.cron.Start()
 }
 
-func (crn *CronService) runListener() {
+func (crn *Service) runListener() {
 	go func() {
 		for {
 			select {
@@ -80,7 +80,7 @@ func (crn *CronService) runListener() {
 	}()
 }
 
-func (crn *CronService) invokeJob(j *job.CronJob) {
+func (crn *Service) invokeJob(j *job.CronJob) {
 	if j.OPC == job.CRON_OPC_ADD {
 		if crn.Table.SetJob(j.ID, j) {
 			entityId, err := crn.cron.AddJob(j.GetJobSchema(), j)
