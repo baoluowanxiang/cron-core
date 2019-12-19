@@ -7,6 +7,7 @@ type Router interface {
 	SetTcpRouter(RouterMap)
 }
 
+// callback
 type RouteFn func()
 
 type RouterMap interface {
